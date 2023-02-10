@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 class IssueViewSet(
     BaseViewSet, mixins.CreateModelMixin, mixins.UpdateModelMixin,
-    mixins.RetrieveModelMixin, mixins.DestroyModelMixin
+    mixins.RetrieveModelMixin, mixins.DestroyModelMixin, mixins.ListModelMixin
 ):
     serializer_class = IssueSerializer
     permission_classes = [IsAuthenticated,]
@@ -91,8 +91,8 @@ class IssueViewSet(
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(
-        detail=True, methods=['delete'], url_name='project_users',
-        url_path='project-users/(?P<user_id>[0-9]*)'
+        detail=True, methods=['delete'], url_name='issue_users',
+        url_path='issue-users/(?P<user_id>[0-9]*)'
     )
     def delete_project_users(self, request, user_id, pk):
         try:
