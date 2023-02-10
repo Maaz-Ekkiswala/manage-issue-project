@@ -39,6 +39,7 @@ urlpatterns = [
     path('api/v1/masters/', include(('apps.masters.urls', "masters"), namespace="masters")),
     path('api/v1/projects/', include(('apps.projects.urls', "projects"), namespace="projects")),
     path('api/v1/issues/', include(('apps.issues.urls', "issues"), namespace="issues")),
+    path('api/v1/comments/', include(('apps.comments.urls', "comments"), namespace="comments")),
 
     # JWT urls
     path('api/v1/login/', ManagerProjectObtainPairView.as_view(), name='token_obtain_pair'),

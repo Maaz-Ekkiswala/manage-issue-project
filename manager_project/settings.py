@@ -50,7 +50,8 @@ PROJECT_APPS = [
     'apps.users',
     'apps.projects',
     'apps.masters',
-    'apps.issues'
+    'apps.issues',
+    'apps.comments'
 ]
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS
 

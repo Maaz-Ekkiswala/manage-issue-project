@@ -26,7 +26,7 @@ class IssueViewSet(
     def get_queryset(self):
         if self.request.user.is_superuser:
             return Issues.objects.all()
-        return Issues.objects.filter(project=self.request.query_params.get('project'))
+        return Issues.objects.filter(project_id=self.request.query_params.get('project_id'))
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
