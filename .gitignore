@@ -1,0 +1,7 @@
+.idea
+**/__pycache__/
+.env
+logs
+media
+static
+apps/*/migrations/0*
