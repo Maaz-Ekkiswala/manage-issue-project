@@ -85,11 +85,11 @@ class ProjectViewSet(
                     status=status.HTTP_201_CREATED
                 )
             if self.request.stream.method == 'PUT':
-                ProjectUser.objects.filter(project=project_instance).delete()
                 if not serializer.is_valid():
                     return Response({
                         "message": "Invalid Data {}".format(serializer.errors)
                     }, status=status.HTTP_400_BAD_REQUEST)
+                ProjectUser.objects.filter(project=project_instance).delete()
                 serializer.save()
                 return Response(
                     ProjectDetailedSerializer(instance=project_instance).data,
@@ -112,7 +112,9 @@ class ProjectViewSet(
     def delete_project_users(self, request, user_id, pk):
         try:
             project_instance = Project.objects.get(pk=pk)
-            project_user = ProjectUser.objects.filter(project=project_instance, assign_to=user_id)
+            project_user = ProjectUser.objects.filter(
+                project=project_instance, assign_to=user_id
+            )
             if not project_user:
                 return Response({
                     "message": "Project user not found"
@@ -131,38 +133,3 @@ class ProjectViewSet(
             return Response({
                 "message": "Something went wrong '{}'".format(ex)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-# class ProjectUserViewSet(BaseViewSet, mixins.CreateModelMixin):
-#     serializer_class = ProjectUserSerializer
-#     queryset = ProjectUsers.objects.all()
-#
-#     def get_permissions(self):
-#         perm_classes = [permissions.IsAuthenticated]
-#         if self.action in ['create', 'update', 'list']:
-#             perm_classes.append(permissions.IsAdminUser)
-#         return [permission() for permission in perm_classes]
-#
-#     def create(self, request, pk=None, *args, **kwargs):
-#         try:
-#             project_instance = Project.objects.get(pk=pk)
-#             if not project_instance:
-#                 return Response({
-#                     "message": "Project not found"
-#                 }, status=status.HTTP_404_NOT_FOUND)
-#             list_data = [{'project': project_instance.id, **item} for item in request.data]
-#             serializer = self.serializer_class(data=list_data, many=True)
-#             if not serializer.is_valid():
-#                 return Response({
-#                     "message": "Invalid Data {}".format(serializer.errors)
-#                 }, status=status.HTTP_400_BAD_REQUEST)
-#             serializer.save(created_by=self.request.user)
-#             return Response(
-#                 ProjectDetailedSerializer(instance=project_instance).data,
-#                 status=status.HTTP_201_CREATED
-#             )
-#         except Exception as ex:
-#             return Response({
-#                 "message": "Something went wrong '{}'".format(ex)
-#             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

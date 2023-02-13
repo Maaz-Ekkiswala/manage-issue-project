@@ -1,6 +1,3 @@
-from rest_framework.exceptions import ValidationError
-
-from apps.comments.functions import is_issue_user
 from apps.comments.models import Comments
 from manager_project.core.serializers import BaseSerializer
 
