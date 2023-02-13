@@ -1,7 +1,5 @@
-from rest_framework import mixins, status, viewsets, permissions
+from rest_framework import mixins, viewsets, permissions
 
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 
 from apps.users.models import UserProfile
 from apps.users.serializers import SignupSerializer, UserProfileSerializer

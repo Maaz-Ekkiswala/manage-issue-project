@@ -15,13 +15,7 @@ class SignupSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        user = UserProfile.objects.create(
-            username=validated_data['username'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
-            avatar=validated_data['avatar'],
-            mobile=validated_data['mobile']
-        )
+        user = UserProfile.objects.create(**validated_data)
         user.set_password(validated_data['password'])
         user.save()
         return user
@@ -29,19 +23,18 @@ class SignupSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     mobile = serializers.CharField(required=False)
-    active_projects = serializers.SerializerMethodField(read_only=True)
+    projects = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = UserProfile
         fields = (
             'id', 'username', 'first_name', 'last_name', 'email', 'avatar', 'mobile',
-            'active_projects'
+            'projects'
         )
         read_only_fields = ('id', 'username')
 
-    def get_active_projects(self, instance):
-        project_ids = ProjectUser.objects.filter(assign_to=instance.id).values_list(
+    def get_projects(self, instance):
+        active_projects = ProjectUser.objects.filter(assign_to=instance.id).values_list(
             'project__id', flat=True
-        )
-        active_projects = len(project_ids)
+        ).count()
         return active_projects

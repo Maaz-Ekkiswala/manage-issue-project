@@ -39,7 +39,7 @@ class IssueViewSet(
         return context
 
     @action(
-        detail=True, methods=['post', 'put'], url_name='issue_users',
+        detail=True, methods=['post'], url_name='issue_users',
         url_path='issue-users'
     )
     def issue_users(self, request, pk):
@@ -64,52 +64,9 @@ class IssueViewSet(
                         IssueSerializer(instance=issue_instance).data,
                         status=status.HTTP_201_CREATED
                     )
-                if self.request.stream.method == 'PUT':
-                    issue_users_list = []
-                    IssueUser.objects.filter(issue=issue_instance).delete()
-                    for issue_user in issue_users:
-                        issue_users_list.append(
-                            IssueUser(issue=issue_instance, assign_to_id=issue_user)
-                        )
-                    if issue_users_list:
-                        IssueUser.objects.bulk_create(issue_users_list)
-                    return Response(
-                        IssueSerializer(instance=issue_instance).data,
-                        status=status.HTTP_200_OK
-                    )
                 return Response({
                     "message": "You cannot assign user which are not in project"
                 }, status=status.HTTP_400_BAD_REQUEST)
-        except ObjectDoesNotExist:
-            return Response({
-                "message": "Issue not found"
-            }, status=status.HTTP_404_NOT_FOUND)
-        except Exception as ex:
-            logger.critical("Caught exception in {}".format(__file__), exc_info=True)
-            return Response({
-                "message": "Something went wrong '{}'".format(ex)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    @action(
-        detail=True, methods=['delete'], url_name='issue_users',
-        url_path='issue-users/(?P<user_id>[0-9]*)'
-    )
-    def delete_project_users(self, request, user_id, pk):
-        try:
-            issue_instance = Issues.objects.get(pk=pk)
-            issue_user = IssueUser.objects.filter(
-                issue=issue_instance,
-                assign_to=user_id
-            )
-            if not issue_user:
-                return Response({
-                    "message": "Issue user not found"
-                }, status=status.HTTP_404_NOT_FOUND)
-            issue_user.delete()
-            return Response(
-                {"message": "Issue user deleted successfully"},
-                status=status.HTTP_200_OK
-            )
         except ObjectDoesNotExist:
             return Response({
                 "message": "Issue not found"

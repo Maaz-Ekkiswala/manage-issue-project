@@ -66,64 +66,25 @@ class ProjectViewSet(
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(
-        detail=True, methods=['post', 'put'], url_name='project_users',
+        detail=True, methods=['post'], url_name='project_users',
         url_path='project-users'
     )
     def project_users(self, request, pk):
         try:
             project_instance = Project.objects.get(pk=pk)
-            list_data = [{'project': project_instance.id, **item} for item in request.data]
-            serializer = ProjectUserSerializer(data=list_data, many=True)
+            project_users_data_list = [{'project': project_instance.id, **item} for item in request.data]
+            serializer = ProjectUserSerializer(data=project_users_data_list, many=True)
             if self.request.stream.method == 'POST':
                 if not serializer.is_valid():
                     return Response({
                         "message": "Invalid Data {}".format(serializer.errors)
                     }, status=status.HTTP_400_BAD_REQUEST)
+
                 serializer.save(created_by=self.request.user)
                 return Response(
                     ProjectDetailedSerializer(instance=project_instance).data,
                     status=status.HTTP_201_CREATED
                 )
-            if self.request.stream.method == 'PUT':
-                if not serializer.is_valid():
-                    return Response({
-                        "message": "Invalid Data {}".format(serializer.errors)
-                    }, status=status.HTTP_400_BAD_REQUEST)
-                ProjectUser.objects.filter(project=project_instance).delete()
-                serializer.save()
-                return Response(
-                    ProjectDetailedSerializer(instance=project_instance).data,
-                    status=status.HTTP_200_OK
-                )
-        except ObjectDoesNotExist:
-            return Response({
-                "message": "Project not found"
-            }, status=status.HTTP_404_NOT_FOUND)
-        except Exception as ex:
-            logger.critical("Caught exception in {}".format(__file__), exc_info=True)
-            return Response({
-                "message": "Something went wrong '{}'".format(ex)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    @action(
-        detail=True, methods=['delete'], url_name='project_users',
-        url_path='project-users/(?P<user_id>[0-9]*)'
-    )
-    def delete_project_users(self, request, user_id, pk):
-        try:
-            project_instance = Project.objects.get(pk=pk)
-            project_user = ProjectUser.objects.filter(
-                project=project_instance, assign_to=user_id
-            )
-            if not project_user:
-                return Response({
-                    "message": "Project user not found"
-                }, status=status.HTTP_404_NOT_FOUND)
-            project_user.delete()
-            return Response(
-                {"message": "Project user deleted successfully"},
-                status=status.HTTP_200_OK
-            )
         except ObjectDoesNotExist:
             return Response({
                 "message": "Project not found"

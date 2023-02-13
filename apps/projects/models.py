@@ -25,4 +25,4 @@ class ProjectUser(Base):
 
     class Meta:
         db_table = "project_users"
-        unique_together = [["project", "assign_to"]]
+        unique_together = ["project", "assign_to"]
