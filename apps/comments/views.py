@@ -24,15 +24,6 @@ class CommentViewSet(
     def get_queryset(self):
         return Comments.objects.filter(issue_id=self.request.query_params.get('issue_id'))
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update(
-            {
-                "request": self.request,
-            }
-        )
-        return context
-
     def create(self, request, *args, **kwargs):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -59,7 +50,7 @@ class CommentViewSet(
 
     def update(self, request, pk=None, *args, **kwargs):
         try:
-            comment_instance = Comments.objects.get(pk=pk, commented_by=self.request.user)
+            comment_instance = Comments.objects.get(pk=pk)
             if comment_instance.commented_by != self.request.user:
                 return Response(
                     {"message": "You cannot update other's comment"},
