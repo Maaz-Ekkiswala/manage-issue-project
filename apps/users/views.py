@@ -1,6 +1,7 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets, permissions
 
-
+from apps.users import filters
 from apps.users.models import UserProfile
 from apps.users.serializers import SignupSerializer, UserProfileSerializer
 
@@ -17,6 +18,8 @@ class UserViewSet(
     mixins.UpdateModelMixin
 ):
     serializer_class = UserProfileSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = filters.UserFilterSet
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -26,7 +29,7 @@ class UserViewSet(
     def get_permissions(self):
         perm_classes = [permissions.IsAuthenticated]
         if self.action in ['retrieve', 'update']:
-            return perm_classes
+            return [permission() for permission in perm_classes]
         if self.action == 'list':
             perm_classes.append(permissions.IsAdminUser)
         return [permission() for permission in perm_classes]

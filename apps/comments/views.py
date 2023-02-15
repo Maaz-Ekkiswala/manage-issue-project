@@ -1,13 +1,12 @@
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import mixins, status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import mixins, status, permissions
 from rest_framework.response import Response
 
-from apps.comments.functions import is_issue_user
 from apps.comments.models import Comments
-from apps.comments.serializers import CommentSerializer, CommentUpdateSerializer
+from apps.comments.serializers import CommentSerializer
+from manager_project.core.permissions import IssueUserPermission
 from manager_project.core.views import BaseViewSet
 
 # Create your views here.
@@ -18,11 +17,18 @@ class CommentViewSet(
     BaseViewSet, mixins.CreateModelMixin, mixins.ListModelMixin, mixins.UpdateModelMixin,
     mixins.DestroyModelMixin
 ):
-    permission_classes = [IsAuthenticated]
     serializer_class = CommentSerializer
 
     def get_queryset(self):
-        return Comments.objects.filter(issue_id=self.request.query_params.get('issue_id'))
+        if self.request.query_params.get('issue_id'):
+            return Comments.objects.filter(issue_id=self.request.query_params.get('issue_id'))
+        return Comments.objects.none()
+
+    def get_permissions(self):
+        perm_classes = [permissions.IsAuthenticated]
+        if self.action in ['create', 'update', 'list', 'destroy']:
+            perm_classes.append(permissions.IsAdminUser | IssueUserPermission)
+        return [permission() for permission in perm_classes]
 
     def create(self, request, *args, **kwargs):
         try:
@@ -31,16 +37,13 @@ class CommentViewSet(
                 return Response({
                     "message": "Invalid Data {}".format(serializer.errors)
                 }, status=status.HTTP_400_BAD_REQUEST)
-            issue_id = serializer.validated_data.get('issue')
-            issue_user = is_issue_user(issue_id=issue_id, logged_in_user=self.request.user)
-            if issue_user:
-                comment_instance = serializer.save(created_by=self.request.user, commented_by_id=self.request.user.id)
-                return Response(
-                    CommentSerializer(instance=comment_instance).data, status=status.HTTP_201_CREATED
-                )
+            comment_instance = serializer.save(
+                issue_id=self.request.query_params.get('issue_id'),
+                created_by=self.request.user,
+                commented_by_id=self.request.user.id
+            )
             return Response(
-                {"message": "You are not allowed to comment on this issue"},
-                status=status.HTTP_403_FORBIDDEN
+                CommentSerializer(instance=comment_instance).data, status=status.HTTP_201_CREATED
             )
         except Exception as ex:
             logger.critical("Caught exception in {}".format(__file__), exc_info=True)
@@ -56,13 +59,13 @@ class CommentViewSet(
                     {"message": "You cannot update other's comment"},
                     status=status.HTTP_403_FORBIDDEN
                 )
-            serializer = CommentUpdateSerializer(instance=comment_instance, data=request.data)
+            serializer = self.serializer_class(instance=comment_instance, data=request.data)
             if not serializer.is_valid():
                 if not serializer.is_valid():
                     return Response({
                         "message": "Invalid Data {}".format(serializer.errors)
                     }, status=status.HTTP_400_BAD_REQUEST)
-            serializer.save()
+            serializer.save(update_by=self.request.user)
             return Response(CommentSerializer(instance=comment_instance).data)
         except ObjectDoesNotExist:
             return Response({

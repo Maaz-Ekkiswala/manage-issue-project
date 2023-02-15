@@ -9,4 +9,4 @@ class CategorySerializer(BaseSerializer):
 
     class Meta:
         model = Category
-        fields = ("id", "name")
+        fields = ("id", "name", "description")

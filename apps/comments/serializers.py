@@ -7,13 +7,5 @@ class CommentSerializer(BaseSerializer):
     class Meta:
         model = Comments
         fields = ("id", "issue", "commented_by", "description")
-        read_only_fields = ("id", "commented_by")
-
-
-class CommentUpdateSerializer(BaseSerializer):
-
-    class Meta:
-        model = Comments
-        fields = ("id", "issue", "commented_by", "description")
         read_only_fields = ("id", "issue", "commented_by")
 
