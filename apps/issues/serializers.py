@@ -39,26 +39,31 @@ class IssueSerializer(BaseSerializer):
     def create(self, validated_data):
         request = self.context.get('request')
         with transaction.atomic():
-            validated_data['project_id'] = request.query_params.get('project_id')
-            issue_instance = super().create(validated_data)
-            issue_users = self.context.get('issue_users')
-            issue_users_list = []
-            for issue_user in issue_users:
-                issue_users_list.append(IssueUser(issue=issue_instance, assign_to_id=issue_user))
-            if issue_users_list:
-                IssueUser.objects.bulk_create(issue_users_list)
-            return issue_instance
+            if self.context:
+                project_id = request.query_params.get('project_id')
+                validated_data['project_id'] = project_id
+                issue_instance = super().create(validated_data)
+                issue_users = self.context.get('issue_users')
+                if issue_users:
+                    issue_users_list = []
+                    for issue_user in issue_users:
+                        issue_users_list.append(IssueUser(issue=issue_instance, assign_to_id=issue_user))
+                    if issue_users_list:
+                        IssueUser.objects.bulk_create(issue_users_list)
+                return issue_instance
 
     def update(self, instance, validated_data):
         with transaction.atomic():
             super().update(instance, validated_data)
-            issue_users_list = []
-            IssueUser.objects.filter(issue=instance).delete()
-            for issue_user in self.context.get('issue_users'):
-                issue_users_list.append(
-                    IssueUser(issue=instance, assign_to_id=issue_user))
-            if issue_users_list:
-                IssueUser.objects.bulk_create(issue_users_list)
+            issue_users = self.context.get('issue_users')
+            if issue_users:
+                issue_users_list = []
+                IssueUser.objects.filter(issue=instance).delete()
+                for issue_user in self.context.get('issue_users'):
+                    issue_users_list.append(
+                        IssueUser(issue=instance, assign_to_id=issue_user))
+                if issue_users_list:
+                    IssueUser.objects.bulk_create(issue_users_list)
             return instance
 
     def get_comments(self, instance):

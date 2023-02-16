@@ -1,4 +1,4 @@
-
+import json
 import os
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -27,23 +27,14 @@ class UserViewTestCases(ManagerTestClient):
         self.assertEqual(response.status_code, 404)
 
     def test_update_user(self):
-        image_path = os.path.abspath(os.path.join(
-                os.path.dirname(__file__),
-                '/home/elixirtechne/PycharmProject/manager_project/media/avatars/Snake_River_5mb.jpg'
-        ))
-        with open(image_path, 'rb') as f:
-            image_content = f.read()
-
-        image = SimpleUploadedFile('Snake_River_5mb.jpg', image_content, content_type='image/jpeg')
         data = {
             "first_name": "Jhones",
             "last_name": "George",
-            "avatar": image
         }
         response = self.authorized_client.put(
-            f"/api/v1/users/{self.user.id}/",
-            data=data,
-            format='multipart'
+            path=f"/api/v1/users/{self.user.id}/",
+            data=json.dumps(data),
+            content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data.get("first_name"), "Jhones")

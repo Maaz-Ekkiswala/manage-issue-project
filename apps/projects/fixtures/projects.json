@@ -1,0 +1,1 @@
+[{"model": "projects.project", "pk": 1, "fields": {"created_ts": "2023-02-07T03:57:33.120Z", "updated_ts": "2023-02-07T03:57:33.120Z", "created_by": null, "updated_by": null, "is_active": true, "name": "Test Project", "url": "/test/url/software_project", "description":  "This is test software project", "category": 1}},

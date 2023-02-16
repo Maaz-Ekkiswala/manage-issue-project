@@ -25,7 +25,7 @@ class ProjectViewSet(BaseViewSet, viewsets.ModelViewSet):
 
     def get_permissions(self):
         perm_classes = [permissions.IsAuthenticated]
-        if self.action in ['create', 'update']:
+        if self.action in ['create', 'update', "project_users"]:
             perm_classes.append(permissions.IsAdminUser)
         return [permission() for permission in perm_classes]
 
@@ -53,7 +53,7 @@ class ProjectViewSet(BaseViewSet, viewsets.ModelViewSet):
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         try:
-            project = Project.all_objects.filter(id=pk).first()
+            project = Project.all_objects.get(id=pk)
             if not project.is_active:
                 return Response({
                     "message": "Project is inactive",

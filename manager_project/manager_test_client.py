@@ -15,7 +15,10 @@ ADMIN_FIRST_NAME = "Admin"
 ADMIN_LAST_NAME = "User"
 ADMIN_MOBILE = "9090909090"
 
+
 class ManagerTestClient(APITestCase):
+    fixtures = ["apps/masters/fixtures/category.json"]
+
     @classmethod
     def setUpTestData(cls):
         super(ManagerTestClient, cls).setUpTestData()
