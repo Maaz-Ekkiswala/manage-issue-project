@@ -97,7 +97,7 @@ if env.str("MP_DJANGO_DB_TYPE") == 'postgres':
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': env.str("MP_DJANGO_DB_NAME"),
             'USER': env.str("MP_DJANGO_DB_USER"),
-            'PASSWORD': env.str("MP_DJANGO_DB_PASS"),
+            'PASSWORD': env.str("MP_DJANGO_DB_PASSWORD"),
             'HOST': env.str("MP_DJANGO_DB_HOST"),
             'PORT': env.str("MP_DJANGO_DB_PORT")
         }

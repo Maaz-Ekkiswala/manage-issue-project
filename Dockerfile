@@ -5,12 +5,11 @@ ENV PYTHONDONTWRITEBYTECODE 1
 # to log the python output in terminal
 ENV PYTHONUNBUFFERED 1
 
-# Move code to work dir
-RUN mkdir /code
-ADD requirements.txt /code/
-ADD . /code/
-WORKDIR /code
+COPY ./requirements.txt /code/requirements.txt
 
+WORKDIR /code
 # Install dependencies
 RUN pip install -r requirements.txt
 
+# Move code to work dir
+ADD . /code/

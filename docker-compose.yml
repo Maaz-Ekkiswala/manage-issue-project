@@ -5,7 +5,7 @@ services:
       build:
         context: .
         dockerfile: Dockerfile
-      command: bash -c 'python manage.py runserver 0.0.0.0:8000'
+      command: bash -c 'python manage.py migrate && python manage.py runserver 0.0.0.0:8000'
       volumes:
         - .:/code
       ports:
@@ -22,9 +22,12 @@ services:
       image: postgres
       restart: always
       ports:
-        - '5435:5432'
-      env_file:
-        - .env
+        - '5433:5432'
+      environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=12345678
+        - POSTGRES_DB=manager_project
+
       volumes:
         - pgdata:/var/lib/postgresql/data
       networks:
