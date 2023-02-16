@@ -1,5 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins, viewsets, permissions
+from rest_framework import mixins, viewsets, permissions, status
+from rest_framework.response import Response
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from apps.users import filters
 from apps.users.models import UserProfile
@@ -11,6 +13,21 @@ from apps.users.serializers import SignupSerializer, UserProfileSerializer
 
 class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = SignupSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"message": "Invalid data '{}'".format(serializer.errors)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        user_profile = serializer.save()
+        ser = TokenObtainPairSerializer(data=serializer.validated_data)
+        ser.is_valid()
+        return Response({
+            "user": UserProfileSerializer(instance=user_profile).data,
+            **ser.validated_data
+        })
 
 
 class UserViewSet(
