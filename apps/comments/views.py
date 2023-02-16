@@ -37,14 +37,16 @@ class CommentViewSet(
                 return Response({
                     "message": "Invalid Data {}".format(serializer.errors)
                 }, status=status.HTTP_400_BAD_REQUEST)
-            comment_instance = serializer.save(
-                issue_id=self.request.query_params.get('issue_id'),
-                created_by=self.request.user,
-                commented_by_id=self.request.user.id
-            )
-            return Response(
-                CommentSerializer(instance=comment_instance).data, status=status.HTTP_201_CREATED
-            )
+            issue_id = self.request.query_params.get('issue_id')
+            if issue_id:
+                comment_instance = serializer.save(
+                    issue_id=issue_id,
+                    created_by=self.request.user,
+                    commented_by_id=self.request.user.id
+                )
+                return Response(
+                    CommentSerializer(instance=comment_instance).data, status=status.HTTP_201_CREATED
+                )
         except Exception as ex:
             logger.critical("Caught exception in {}".format(__file__), exc_info=True)
             return Response({
@@ -54,7 +56,7 @@ class CommentViewSet(
     def update(self, request, pk=None, *args, **kwargs):
         try:
             comment_instance = Comments.objects.get(pk=pk)
-            if comment_instance.commented_by != self.request.user:
+            if comment_instance.commented_by.id != self.request.user.id:
                 return Response(
                     {"message": "You cannot update other's comment"},
                     status=status.HTTP_403_FORBIDDEN
@@ -80,7 +82,7 @@ class CommentViewSet(
     def destroy(self, request, pk=None, *args, **kwargs):
         try:
             comment_instance = Comments.objects.get(pk=pk)
-            if comment_instance.commented_by != self.request.user:
+            if comment_instance.commented_by.id != self.request.user.id:
                 return Response(
                     {"message": "You cannot delete other's comment"},
                     status=status.HTTP_403_FORBIDDEN

@@ -24,7 +24,7 @@ class IssueViewSet(BaseViewSet, viewsets.ModelViewSet):
 
     def get_permissions(self):
         perm_classes = [permissions.IsAuthenticated]
-        if self.action in ['create', 'update', 'list' 'retrieve', 'issue_users', 'destroy']:
+        if self.action in ['create', 'update', 'list', 'retrieve', 'issue_users', 'destroy']:
             perm_classes.append(permissions.IsAdminUser | ProjectUserPermission)
         return [permission() for permission in perm_classes]
 
@@ -54,6 +54,20 @@ class IssueViewSet(BaseViewSet, viewsets.ModelViewSet):
             }
         )
         return context
+
+    def retrieve(self, request, pk=None, *args, **kwargs):
+        try:
+            issue_instance = Issues.objects.get(pk=pk)
+            return Response(IssueSerializer(instance=issue_instance).data)
+        except ObjectDoesNotExist:
+            return Response({
+                "message": "Issue not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as ex:
+            logger.critical("Caught exception in {}".format(__file__), exc_info=True)
+            return Response({
+                "message": "Something went wrong '{}'".format(ex)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def destroy(self, request, pk=None, *args, **kwargs):
         try:

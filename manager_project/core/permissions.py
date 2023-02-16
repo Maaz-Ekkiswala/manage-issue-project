@@ -1,7 +1,7 @@
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import BasePermission
 
-from apps.issues.models import IssueUser
+from apps.issues.models import IssueUser, Issues
 from apps.projects.models import ProjectUser
 
 
@@ -31,6 +31,9 @@ class IssueUserPermission(BasePermission):
         issue_id = request.query_params.get('issue_id')
         if not issue_id:
             raise ValidationError({"message": "You should pass issue_id in parameters"})
+        issue_instance = Issues.objects.filter(pk=issue_id)
+        if not issue_instance:
+            raise ValidationError({"message": "Issue not found"})
         issue_users = None
         if issue_id:
             issue_users = IssueUser.objects.filter(
